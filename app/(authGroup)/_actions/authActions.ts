@@ -196,3 +196,4 @@ export const getUserRole = async () => {
     const cookieStore = await cookies();
     return cookieStore.get('userRole')?.value || null;
 };
+
