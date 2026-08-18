@@ -4,6 +4,7 @@ import {
   CreditCardIcon,
   ProfileIcon,
   StarIcon,
+  HeartIcon,
 } from '@hugeicons/core-free-icons';
 import type { ISidebarItem } from '@/lib/types';
 
@@ -17,6 +18,11 @@ export const CUSTOMER_SIDEBAR_ITEMS: ISidebarItem[] = [
     label: 'My Orders',
     href: '/customer/orders',
     icon: CalendarCheckIcon,
+  },
+  {
+    label: 'Wishlist',
+    href: '/customer/wishlist',
+    icon: HeartIcon,
   },
   {
     label: 'Payments',

@@ -48,13 +48,31 @@ export default function ReviewModal({
       toast.success(review ? 'Review updated!' : 'Review submitted!');
       onClose();
       queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['my-reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['gear'] });
     } else if (state.error) {
       toast.error(state.error);
     }
   }, [state, onClose, queryClient, review]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={review ? 'Edit your review' : 'Review this gear'}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <form action={formAction} className="w-full max-w-md rounded-2xl bg-card p-6 shadow-xl">
         <div className="flex items-start justify-between">
           <div>
@@ -64,6 +82,7 @@ export default function ReviewModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close review dialog"
             className="text-muted-foreground hover:text-foreground"
           >
             ✕

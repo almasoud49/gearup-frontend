@@ -54,8 +54,18 @@ const getServerError = async (res: Response, fallback: string) => {
   }
 };
 
-export const getAdminUsers = async (): Promise<ApiResponse<User[]>> => {
-  const res = await fetch(`${API_BASE_URL}/admin/users`, {
+export const getAdminUsers = async (params?: {
+  role?: string;
+  searchTerm?: string;
+  isSuspended?: boolean;
+}): Promise<ApiResponse<User[]>> => {
+  const qs = new URLSearchParams();
+  if (params?.role) qs.set('role', params.role);
+  if (params?.searchTerm) qs.set('searchTerm', params.searchTerm);
+  if (params?.isSuspended !== undefined) qs.set('isSuspended', String(params.isSuspended));
+  const query = qs.toString();
+
+  const res = await fetch(`${API_BASE_URL}/admin/users${query ? `?${query}` : ''}`, {
     headers: await authHeaders(),
     cache: 'no-store',
   });
@@ -70,8 +80,6 @@ export const getAdminStats = async (): Promise<ApiResponse<AdminStats>> => {
   return res.json();
 };
 
-// NOTE: the deployed backend has no admin user-update endpoint; conventional
-// shape, surfaces backend error if unsupported.
 export const updateUserStatusAction = async (
   id: string,
   isSuspended: boolean
@@ -84,6 +92,34 @@ export const updateUserStatusAction = async (
 
   if (!res.ok) {
     return { ok: false, error: await getServerError(res, 'Backend rejected the update') };
+  }
+  return { ok: true };
+};
+
+export const updateUserRoleAction = async (
+  id: string,
+  role: 'CUSTOMER' | 'PROVIDER'
+): Promise<ActionResult> => {
+  const res = await fetch(`${API_BASE_URL}/admin/users/${id}/role`, {
+    method: 'PATCH',
+    headers: { ...jsonHeaders, ...(await authHeaders()) },
+    body: JSON.stringify({ role }),
+  });
+
+  if (!res.ok) {
+    return { ok: false, error: await getServerError(res, 'Backend rejected the update') };
+  }
+  return { ok: true };
+};
+
+export const deleteUserAction = async (id: string): Promise<ActionResult> => {
+  const res = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: await authHeaders(),
+  });
+
+  if (!res.ok) {
+    return { ok: false, error: await getServerError(res, 'Backend rejected the deletion') };
   }
   return { ok: true };
 };

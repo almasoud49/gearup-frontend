@@ -15,6 +15,7 @@ export interface User {
   isSuspended: boolean;
   createdAt?: string;
   updatedAt?: string;
+  _count?: { gearItems?: number; rentalOrders?: number; reviews?: number };
 }
 
 export interface GearItem {

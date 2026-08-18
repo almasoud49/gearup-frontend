@@ -50,10 +50,14 @@ export default function LoginForm() {
             name="email"
             type="email"
             placeholder="you@example.com"
-            className={`h-11 pl-10 ${!state.success && state.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+            aria-invalid={!state.success && !!state.email}
+            aria-describedby={!state.success && state.email ? 'email-error' : undefined}
+            className={`h-11 pl-10 transition-shadow focus-visible:ring-primary ${!state.success && state.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
           />
         </div>
-        {!state.success && state.email && <p className="text-sm text-red-500 dark:text-red-400">{state.email}</p>}
+        {!state.success && state.email && (
+          <p id="email-error" className="text-sm text-red-500 dark:text-red-400">{state.email}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -70,9 +74,13 @@ export default function LoginForm() {
           id="password"
           name="password"
           placeholder="••••••••"
+          aria-invalid={!state.success && !!state.password}
+          aria-describedby={!state.success && state.password ? 'password-error' : undefined}
           className={!state.success && state.password ? 'border-red-500 focus-visible:ring-red-500' : ''}
         />
-        {!state.success && state.password && <p className="text-sm text-red-500 dark:text-red-400">{state.password}</p>}
+        {!state.success && state.password && (
+          <p id="password-error" className="text-sm text-red-500 dark:text-red-400">{state.password}</p>
+        )}
       </div>
 
       {!state.success && state.form && (
@@ -84,14 +92,18 @@ export default function LoginForm() {
       <Button
         type="submit"
         disabled={isPending}
-        className="h-11 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-semibold text-white transition-all duration-200 hover:from-indigo-700 hover:to-purple-700"
+        className="group h-11 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-indigo-600/35"
       >
         {isPending ? (
           'Signing in...'
         ) : (
           <>
             Sign in
-            <HugeiconsIcon icon={ArrowRight02Icon} className="size-4" strokeWidth={2} />
+            <HugeiconsIcon
+              icon={ArrowRight02Icon}
+              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+              strokeWidth={2}
+            />
           </>
         )}
       </Button>
@@ -99,7 +111,7 @@ export default function LoginForm() {
       <p className="text-sm text-center text-muted-foreground">
         Don&apos;t have an account?{' '}
         <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 hover:underline transition dark:text-indigo-400 dark:hover:text-indigo-300">
-          Register
+          Sign Up
         </Link>
       </p>
     </form>

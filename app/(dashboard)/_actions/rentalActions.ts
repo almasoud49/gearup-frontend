@@ -99,6 +99,24 @@ export const updateRentalStatusAction = async (
   return { ok: true };
 };
 
+export const cancelRentalAction = async (id: string): Promise<ActionResult> => {
+  const res = await fetch(`${API_BASE_URL}/rentals/${id}/cancel`, {
+    method: 'PATCH',
+    headers: { ...jsonHeaders, ...(await authHeaders()) },
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      return {
+        ok: false,
+        error: 'Cancellation is not supported by this backend yet.',
+      };
+    }
+    return { ok: false, error: await getServerError(res, 'Could not cancel the order.') };
+  }
+  return { ok: true };
+};
+
 export const createReviewAction = async (
   gearItemId: string,
   _prevState: ReviewActionState | null,

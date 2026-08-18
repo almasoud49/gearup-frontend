@@ -7,10 +7,12 @@ import { useQuery } from '@tanstack/react-query';
 import GearForm from '@/app/(dashboard)/_components/gear/GearForm';
 import { getGearById } from '@/app/(public)/_actions/gearActions';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/lib/auth';
 
 export default function EditGearPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const user = useAuthStore((state) => state.user);
 
   const { data, isLoading } = useQuery({
     queryKey: ['gear', id],
@@ -33,6 +35,19 @@ export default function EditGearPage() {
     return (
       <div className="mx-auto max-w-3xl rounded-2xl border border-border/60 bg-card p-10 text-center">
         <p className="text-muted-foreground">Could not load this gear item.</p>
+        <Button asChild className="mt-4">
+          <Link href="/provider/gear">Back to My Gear</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (user?.id && gear.providerId && gear.providerId !== user.id) {
+    return (
+      <div className="mx-auto max-w-3xl rounded-2xl border border-border/60 bg-card p-10 text-center">
+        <p className="text-muted-foreground">
+          This gear item belongs to another provider and can&apos;t be edited here.
+        </p>
         <Button asChild className="mt-4">
           <Link href="/provider/gear">Back to My Gear</Link>
         </Button>

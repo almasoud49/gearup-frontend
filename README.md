@@ -42,7 +42,7 @@ A modern gear-rental marketplace built with **Next.js 16 (App Router)**, **React
 
 | Role | Email | Password |
 | --- | --- | --- |
-| **Admin** | `admin@gearup.com` | `Admin@123` |
+| **Admin** | `admin@gearup.com` | `admin123` |
 | **Provider** | `test.prov.status@example.com` | `Password123` |
 | **Customer** | `test.cust.lifecycle@example.com` | `Password123` |
 
@@ -238,10 +238,3 @@ npx tsc --noEmit  # Typecheck
 
 ---
 
-## Assignment Notes (B7A5)
-
-- **Real Stripe checkout** (test mode) with `/payment/success` and `/payment/cancel` pages — no simulation.
-- Rental-order status → badge colors: **PLACED**=orange, **CONFIRMED**=blue, **PAID**=purple, **PICKED_UP**=green, **RETURNED**=gray, **CANCELLED**=red.
-- Status transitions guarded server-side: `PLACED→CONFIRMED`, `PAID→PICKED_UP`, `PICKED_UP→RETURNED`.
-- Provider/Admin update orders via `PATCH /rentals/:id/status`; admin manages users via `PATCH /admin/users/:id/suspend`.
-- Working admin credentials for the deployed app are documented in [Demo Credentials](#-demo-credentials).

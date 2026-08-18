@@ -27,15 +27,15 @@ import { ROLE_HOME, useAuthStore } from '@/lib/auth';
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Gears', href: '/gear' },
-  { label: 'About Us', href: '/about' },
-  { label: 'Contact Us', href: '/contact' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 const SOCIALS = [
-  { icon: Facebook01Icon, label: 'Facebook' },
-  { icon: InstagramIcon, label: 'Instagram' },
-  { icon: TwitterIcon, label: 'Twitter' },
-  { icon: Linkedin01Icon, label: 'LinkedIn' },
+  { icon: Facebook01Icon, label: 'Facebook', href: 'https://facebook.com' },
+  { icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com' },
+  { icon: TwitterIcon, label: 'Twitter', href: 'https://twitter.com' },
+  { icon: Linkedin01Icon, label: 'LinkedIn', href: 'https://linkedin.com' },
 ];
 
 export default function Footer() {
@@ -53,50 +53,45 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative overflow-hidden bg-slate-950 text-slate-300">
-      {/* animated gradient top bar */}
-      <div className="h-1 w-full animate-gradient-x bg-gradient-to-r from-primary via-amber-400 to-fuchsia-500" />
-
-      {/* grid pattern + ellipse orbs overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgb(255 255 255 / 0.6) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / 0.6) 1px, transparent 1px)',
-          backgroundSize: '44px 44px',
-        }}
-      />
-      <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-primary/25 blur-3xl mix-blend-screen" />
+    <footer className="relative overflow-hidden bg-indigo-950 text-indigo-100">
+      {/* thin brand accent bar */}
+      <div className="h-1 w-full bg-gradient-to-r from-primary via-amber-400 to-fuchsia-500" />
+      {/* indigo depth overlay + orbs, matching the page heroes */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-indigo-950 via-indigo-950/90 to-indigo-950" />
+      <div className="animate-float pointer-events-none absolute -right-24 top-1/3 size-96 rounded-full bg-sky-400/20 blur-3xl mix-blend-screen" />
       <div className="pointer-events-none absolute -left-28 bottom-10 size-80 rounded-full bg-fuchsia-600/20 blur-3xl mix-blend-screen" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        {/* CTA banner — subdued, on-theme */}
-        <div className="-translate-y-px pb-4">
-          <div className="relative isolate overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
-            <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-primary/30 blur-3xl mix-blend-screen" />
-            <div className="pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-fuchsia-600/20 blur-3xl mix-blend-screen" />
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary via-indigo-500 to-fuchsia-500" />
-            <div className="relative flex flex-col items-start justify-between gap-6 px-6 py-7 sm:flex-row sm:items-center sm:px-9">
-              <div>
+        {/* CTA banner — clear hierarchy, generous whitespace */}
+        <div className="py-16">
+          <div className="relative isolate overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-8 py-10 sm:px-12 backdrop-blur-sm">
+            <div className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-primary/30 blur-3xl mix-blend-screen" />
+            <div className="pointer-events-none absolute -bottom-28 -left-16 size-64 rounded-full bg-fuchsia-600/20 blur-3xl mix-blend-screen" />
+            <div className="relative flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
                 <p className="text-xs font-semibold uppercase tracking-widest text-primary">
                   Ready for your next adventure?
                 </p>
-                <h3 className="mt-1.5 text-xl font-bold text-white sm:text-2xl">
+                <h3 className="mt-2 text-2xl font-bold text-white sm:text-3xl">
                   Join thousands of renters &amp; providers.
                 </h3>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-indigo-200/80">
                   Rent gear by the day — or list your own and start earning today.
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap gap-3">
-                <Button asChild size="lg" className="bg-white text-slate-950 hover:bg-indigo-50">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-white text-indigo-950 shadow-lg shadow-white/10 transition-all duration-200 hover:bg-indigo-50 hover:shadow-white/20"
+                >
                   <Link href="/register">Get started</Link>
                 </Button>
                 <Button
                   asChild
                   size="lg"
                   variant="outline"
-                  className="border-white/20 text-white hover:border-primary hover:bg-primary/20"
+                  className="border-white/20 text-white transition-all duration-200 hover:border-primary hover:bg-primary/20"
                 >
                   <Link href="/gear">Browse gears</Link>
                 </Button>
@@ -105,20 +100,24 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Columns */}
-        <div className="grid gap-10 py-12 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        {/* Link columns — aligned grid, consistent spacing */}
+        <div className="grid gap-12 py-12 md:grid-cols-[1.6fr_1fr_1fr_1.3fr]">
+          {/* Brand */}
           <div>
-            <Link href="/" className="flex w-fit items-center gap-2 text-lg font-bold text-white">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600 text-primary-foreground">
+            <Link
+              href="/"
+              className="group flex w-fit items-center gap-2 text-lg font-bold text-white"
+            >
+              <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600 text-primary-foreground transition-transform duration-300 group-hover:scale-105">
                 <HugeiconsIcon icon={Dumbbell01Icon} className="size-5" strokeWidth={2} />
               </span>
               GearUp
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-indigo-200/80">
               Rent sports and outdoor gear on demand. Find gear, book dates, and pay securely — all
               in one place.
             </p>
-            <div className="mt-5 space-y-2 text-sm text-slate-400">
+            <div className="mt-5 space-y-2 text-sm text-indigo-200/80">
               <p className="flex items-center gap-2">
                 <HugeiconsIcon icon={Mail01Icon} className="size-4 text-primary" strokeWidth={2} />
                 support@gearup.com
@@ -132,9 +131,11 @@ export default function Footer() {
               {SOCIALS.map((social) => (
                 <a
                   key={social.label}
-                  href="#"
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white"
+                  className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-indigo-100 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-white active:scale-90"
                 >
                   <HugeiconsIcon icon={social.icon} className="size-4" strokeWidth={2} />
                 </a>
@@ -142,14 +143,15 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Explore */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-white">Explore</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-5 space-y-3 text-sm">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="group relative inline-flex items-center gap-1.5 text-slate-400 transition-colors hover:text-white"
+                    className="group relative inline-flex items-center gap-1.5 text-indigo-200/80 transition-colors hover:text-white"
                   >
                     <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
                     {link.label}
@@ -159,16 +161,21 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Account */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-white">Account</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-5 space-y-3 text-sm">
               {user ? (
                 <li>
                   <Link
                     href={ROLE_HOME[user.role]}
-                    className="group relative inline-flex items-center gap-1.5 text-slate-400 transition-colors hover:text-white"
+                    className="group relative inline-flex items-center gap-1.5 text-indigo-200/80 transition-colors hover:text-white"
                   >
-                    <HugeiconsIcon icon={DashboardSquare01Icon} className="size-4 text-primary" strokeWidth={2} />
+                    <HugeiconsIcon
+                      icon={DashboardSquare01Icon}
+                      className="size-4 text-primary"
+                      strokeWidth={2}
+                    />
                     <span className="absolute -bottom-0.5 left-6 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
                     My Dashboard
                   </Link>
@@ -178,9 +185,13 @@ export default function Footer() {
                   <li>
                     <Link
                       href="/login"
-                      className="group relative inline-flex items-center gap-1.5 text-slate-400 transition-colors hover:text-white"
+                      className="group relative inline-flex items-center gap-1.5 text-indigo-200/80 transition-colors hover:text-white"
                     >
-                      <HugeiconsIcon icon={Login03Icon} className="size-4 text-primary" strokeWidth={2} />
+                      <HugeiconsIcon
+                        icon={Login03Icon}
+                        className="size-4 text-primary"
+                        strokeWidth={2}
+                      />
                       <span className="absolute -bottom-0.5 left-6 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
                       Login
                     </Link>
@@ -188,11 +199,15 @@ export default function Footer() {
                   <li>
                     <Link
                       href="/register"
-                      className="group relative inline-flex items-center gap-1.5 text-slate-400 transition-colors hover:text-white"
+                      className="group relative inline-flex items-center gap-1.5 text-indigo-200/80 transition-colors hover:text-white"
                     >
-                      <HugeiconsIcon icon={Login03Icon} className="size-4 text-primary" strokeWidth={2} />
+                      <HugeiconsIcon
+                        icon={Login03Icon}
+                        className="size-4 text-primary"
+                        strokeWidth={2}
+                      />
                       <span className="absolute -bottom-0.5 left-6 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
-                      Create account
+                      Sign Up
                     </Link>
                   </li>
                 </>
@@ -200,15 +215,20 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Browse + newsletter */}
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-white">Browse</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-5 space-y-3 text-sm">
               <li>
                 <Link
                   href="/gear"
-                  className="group relative inline-flex items-center gap-1.5 text-slate-400 transition-colors hover:text-white"
+                  className="group relative inline-flex items-center gap-1.5 text-indigo-200/80 transition-colors hover:text-white"
                 >
-                  <HugeiconsIcon icon={GridViewIcon} className="size-4 text-primary" strokeWidth={2} />
+                  <HugeiconsIcon
+                    icon={GridViewIcon}
+                    className="size-4 text-primary"
+                    strokeWidth={2}
+                  />
                   <span className="absolute -bottom-0.5 left-6 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
                   All gears
                 </Link>
@@ -216,9 +236,13 @@ export default function Footer() {
               <li>
                 <Link
                   href="/gear"
-                  className="group relative inline-flex items-center gap-1.5 text-slate-400 transition-colors hover:text-white"
+                  className="group relative inline-flex items-center gap-1.5 text-indigo-200/80 transition-colors hover:text-white"
                 >
-                  <HugeiconsIcon icon={Home01Icon} className="size-4 text-primary" strokeWidth={2} />
+                  <HugeiconsIcon
+                    icon={Home01Icon}
+                    className="size-4 text-primary"
+                    strokeWidth={2}
+                  />
                   <span className="absolute -bottom-0.5 left-6 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
                   Popular categories
                 </Link>
@@ -227,14 +251,14 @@ export default function Footer() {
 
             {/* Newsletter */}
             <form onSubmit={handleSubscribe} className="mt-6">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-medium uppercase tracking-wide text-indigo-300/70">
                 Never miss a deal
               </p>
               <div className="mt-2 flex gap-2">
                 <div className="relative flex-1">
                   <HugeiconsIcon
                     icon={Mail01Icon}
-                    className="absolute left-3 top-2.5 size-4 text-slate-500"
+                    className="absolute left-3 top-2.5 size-4 text-indigo-300/70"
                     strokeWidth={2}
                   />
                   <Input
@@ -242,7 +266,7 @@ export default function Footer() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border-white/10 bg-white/5 pl-9 text-slate-200 placeholder:text-slate-500 focus-visible:border-primary"
+                    className="border-white/10 bg-white/5 pl-9 text-indigo-50 transition-all duration-200 placeholder:text-indigo-300/70 hover:border-white/20 focus-visible:border-primary focus-visible:ring-primary/40"
                   />
                 </div>
                 <Button type="submit" size="icon" aria-label="Subscribe">
@@ -254,7 +278,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col items-center justify-between gap-2 border-t border-white/10 py-6 text-xs text-slate-500 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-2 border-t border-white/10 py-6 text-xs text-indigo-300/70 sm:flex-row">
           <p>© {new Date().getFullYear()} GearUp. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <p className="flex items-center gap-1.5">
@@ -265,7 +289,7 @@ export default function Footer() {
             <a
               href="#top"
               aria-label="Back to top"
-              className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-400 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary"
+              className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-indigo-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary active:scale-90"
             >
               <HugeiconsIcon icon={ArrowUp01Icon} className="size-3.5" strokeWidth={2} />
             </a>

@@ -142,19 +142,21 @@ export default function AboutPage() {
               fraction of the purchase price. It&apos;s simpler, greener, and more affordable for
               everyone.
             </p>
-            <div className="mt-8 flex flex-wrap gap-6">
+            <div className="mt-8 flex flex-wrap gap-x-10 gap-y-6">
               <div>
-                <p className="text-3xl font-extrabold text-primary">
+                <p className="text-3xl font-extrabold text-primary tabular-nums">
                   {gearCount != null ? `${gearCount}+` : '…'}
                 </p>
                 <p className="text-sm text-muted-foreground">Gear items listed</p>
               </div>
+              <div className="h-12 w-px bg-border" />
               <div>
-                <p className="text-3xl font-extrabold text-primary">
+                <p className="text-3xl font-extrabold text-primary tabular-nums">
                   {categoryCount != null ? categoryCount : '…'}
                 </p>
                 <p className="text-sm text-muted-foreground">Sports categories</p>
               </div>
+              <div className="h-12 w-px bg-border" />
               <div>
                 <p className="text-3xl font-extrabold text-primary">100%</p>
                 <p className="text-sm text-muted-foreground">Secure payments</p>
@@ -211,24 +213,24 @@ export default function AboutPage() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">Why GearUp</p>
           <h2 className="mt-2 text-3xl font-bold">Built on values, not just gear</h2>
-          <p className="mt-2 text-muted-foreground">
-            Everything we do is designed around trust, flexibility and fairness.
-          </p>
-        </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {VALUES.map((value, i) => (
-            <Reveal key={value.title} delay={(i % 4) * 80}>
-              <div className="group relative h-full overflow-hidden rounded-2xl border border-border/60 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
-                <div className="pointer-events-none absolute -right-10 -top-10 size-28 rounded-full bg-primary/10 blur-2xl transition-all duration-500 group-hover:bg-primary/25" />
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
-                  <HugeiconsIcon icon={value.icon} className="size-5" strokeWidth={2} />
+<p className="mt-2 text-muted-foreground">
+              Everything we do is designed around trust, flexibility and fairness.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {VALUES.map((value, i) => (
+              <Reveal key={value.title} delay={(i % 4) * 80}>
+                <div className="group relative h-full overflow-hidden rounded-2xl border border-border/60 bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
+                  <div className="pointer-events-none absolute -right-10 -top-10 size-28 rounded-full bg-primary/10 blur-2xl transition-all duration-500 group-hover:bg-primary/25" />
+                  <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-fuchsia-500/15 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <HugeiconsIcon icon={value.icon} className="size-5" strokeWidth={2} />
+                  </div>
+                  <h3 className="mt-4 font-semibold">{value.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{value.text}</p>
                 </div>
-                <h3 className="mt-4 font-semibold">{value.title}</h3>
-                <p className="mt-1.5 text-sm text-muted-foreground">{value.text}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+              </Reveal>
+            ))}
+          </div>
       </section>
 
       <section className="relative isolate overflow-hidden bg-muted">

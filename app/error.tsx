@@ -20,7 +20,9 @@ export default function GlobalErrorBoundary({
       <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-8 text-center shadow-sm">
         <h2 className="text-2xl font-bold">Something went wrong</h2>
         <p className="mt-2 text-muted-foreground">
-          {error.message || 'An unexpected error occurred.'}
+          {process.env.NODE_ENV === 'development'
+            ? error.message || 'An unexpected error occurred.'
+            : 'An unexpected error occurred. Please try again.'}
         </p>
         <Button className="mt-6" onClick={reset}>
           Try again

@@ -10,15 +10,19 @@ import {
   Calendar02Icon,
   ArrowRight02Icon,
   BadgeCheckIcon,
+  ShoppingBag01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
 import Header from '@/app/(public)/_components/Header';
 import GearCard from '@/app/(public)/_components/gear/GearCard';
 import GearImage, { isRenderedImage } from '@/app/(public)/_components/gear/GearImage';
+import WishlistButton from '@/app/(public)/_components/gear/WishlistButton';
 import { Button } from '@/components/ui/button';
 import { getAllGear, getGearById } from '@/app/(public)/_actions/gearActions';
+import { getMyRentals } from '@/app/(public)/_actions/rentalActions';
 import { useAuthStore } from '@/lib/auth';
+import { useCartStore } from '@/lib/cartStore';
 import { RatingStars } from '@/app/(public)/_components/gear/RatingStars';
 import { cn } from '@/lib/utils';
 
@@ -55,6 +59,43 @@ export default function GearDetailPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  const isCustomer = user?.role === 'CUSTOMER';
+  const { data: myRentalsData } = useQuery({
+    queryKey: ['my-rentals', 'booking', gear?.id],
+    queryFn: getMyRentals,
+    enabled: !!gear && !!user && isCustomer,
+  });
+
+  const blockedRanges = useMemo(() => {
+    if (!gear) return [] as { start: string; end: string }[];
+    return (myRentalsData?.data ?? [])
+      .filter(
+        (r) =>
+          r.gearItemId === gear.id &&
+          ['PLACED', 'CONFIRMED', 'PAID', 'PICKED_UP'].includes(r.status)
+      )
+      .map((r) => ({
+        start: new Date(r.startDate).toISOString().split('T')[0],
+        end: new Date(r.endDate).toISOString().split('T')[0],
+      }))
+      .filter((r) => !Number.isNaN(new Date(r.start).getTime()) && !Number.isNaN(new Date(r.end).getTime()));
+  }, [gear, myRentalsData]);
+
+  const bookingConflict = useMemo(() => {
+    if (!startDate || !endDate) return null;
+    const range = {
+      start: new Date(`${startDate}T00:00:00`).getTime(),
+      end: new Date(`${endDate}T00:00:00`).getTime(),
+    };
+    const hit = blockedRanges.find(
+      (b) =>
+        range.start <= new Date(`${b.end}T00:00:00`).getTime() &&
+        range.end >= new Date(`${b.start}T00:00:00`).getTime()
+    );
+    if (!hit) return null;
+    return `You already have this gear booked ${new Date(`${hit.start}T00:00:00`).toLocaleDateString()} → ${new Date(`${hit.end}T00:00:00`).toLocaleDateString()}.`;
+  }, [startDate, endDate, blockedRanges]);
+
   const days = useMemo(() => {
     if (!startDate || !endDate || endDate <= startDate) return 0;
     const diff = new Date(endDate).getTime() - new Date(startDate).getTime();
@@ -63,10 +104,30 @@ export default function GearDetailPage() {
 
   const totalPrice = gear ? days * gear.pricePerDay : 0;
 
+  const addToCart = useCartStore((s) => s.add);
+
+  const handleAddToCart = () => {
+    if (!gear) return;
+    if (days < 1) {
+      toast.error('Please pick a valid start and end date.');
+      return;
+    }
+    if (bookingConflict) {
+      toast.error(bookingConflict);
+      return;
+    }
+    addToCart({ gearId: gear.id, startDate, endDate });
+    toast.success('Added to cart.');
+  };
+
   const handleRent = () => {
     if (!gear) return;
     if (days < 1) {
       toast.error('Please pick a valid start and end date.');
+      return;
+    }
+    if (bookingConflict) {
+      toast.error(bookingConflict);
       return;
     }
     if (!user) {
@@ -122,15 +183,15 @@ export default function GearDetailPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">
+          <Link href="/" className="transition hover:text-primary">
             Home
           </Link>
-          <span>/</span>
-          <Link href="/gear" className="hover:text-foreground">
+          <span className="text-muted-foreground/50">/</span>
+          <Link href="/gear" className="transition hover:text-primary">
             Gear
           </Link>
-          <span>/</span>
-          <span className="truncate text-foreground">{gear.name}</span>
+          <span className="text-muted-foreground/50">/</span>
+          <span className="truncate font-medium text-foreground">{gear.name}</span>
         </nav>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
@@ -152,6 +213,8 @@ export default function GearDetailPage() {
                     key={src + i}
                     type="button"
                     onClick={() => setActiveImage(src)}
+                    aria-label={`View image ${i + 1} of ${galleryImages.length}`}
+                    aria-current={(activeImage ?? galleryImages[0]) === src}
                     className={cn(
                       'relative aspect-[16/10] w-28 overflow-hidden rounded-xl ring-2 transition',
                       (activeImage ?? galleryImages[0]) === src
@@ -168,6 +231,11 @@ export default function GearDetailPage() {
             <div className="mt-8">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-3xl font-bold">{gear.name}</h1>
+                <WishlistButton
+                  gearId={gear.id}
+                  className="size-10"
+                  activeClassName="bg-primary/10 dark:bg-primary/10"
+                />
                 {gear.category?.name && (
                   <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                     {gear.category.name}
@@ -200,17 +268,23 @@ export default function GearDetailPage() {
               </p>
 
               <div className="mt-8 overflow-hidden rounded-2xl border border-border/60 bg-card">
-                <div className="border-b border-border/60 px-5 py-4 font-semibold">
-                  Specifications
+                <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
+                  <span className="font-semibold">Specifications</span>
+                  <span className="text-xs text-muted-foreground">
+                    {Object.keys(gear.specifications ?? {}).length + 1} details
+                  </span>
                 </div>
                 <div className="grid gap-x-8 gap-y-3 p-5 sm:grid-cols-2">
                   {Object.entries(gear.specifications ?? {}).map(([key, value]) => (
-                    <div key={key} className="flex justify-between gap-4 text-sm">
+                    <div
+                      key={key}
+                      className="flex justify-between gap-4 rounded-lg bg-muted/40 px-3 py-2 text-sm"
+                    >
                       <span className="capitalize text-muted-foreground">{key.replace(/[_-]/g, ' ')}</span>
                       <span className="font-medium text-right">{String(value)}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between gap-4 text-sm">
+                  <div className="flex justify-between gap-4 rounded-lg bg-muted/40 px-3 py-2 text-sm">
                     <span className="text-muted-foreground">Stock</span>
                     <span className="font-medium">{gear.stockQuantity} available</span>
                   </div>
@@ -218,99 +292,138 @@ export default function GearDetailPage() {
               </div>
 
               {gear.provider && (
-                <div className="mt-8 flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-5">
-                  <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+                <div className="mt-8 flex items-center gap-4 rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-md">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-fuchsia-500/20 text-lg font-bold text-primary">
                     {gear.provider.name.charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-semibold">{gear.provider.name}</p>
-                    <p className="text-sm text-muted-foreground">{gear.provider.email}</p>
+                    <p className="truncate text-sm text-muted-foreground">{gear.provider.email}</p>
                   </div>
-                  <span className="ml-auto flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400">
+                  <span className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-500/15 dark:text-green-400">
                     <HugeiconsIcon icon={BadgeCheckIcon} className="size-4" strokeWidth={2} />
-                    Verified provider
+                    Verified
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          <aside className="h-fit rounded-2xl border border-border/60 bg-card p-6 lg:sticky lg:top-20">
-            <div className="flex items-end justify-between">
-              <div>
-                <span className="text-3xl font-bold text-primary">${gear.pricePerDay.toFixed(2)}</span>
-                <span className="text-sm text-muted-foreground"> / day</span>
+          <aside className="h-fit overflow-hidden rounded-2xl border border-border/60 bg-card lg:sticky lg:top-20">
+            <div className="pointer-events-none h-1 w-full bg-gradient-to-r from-primary via-indigo-500 to-fuchsia-500" />
+            <div className="p-6">
+              <div className="flex items-end justify-between">
+                <div>
+                  <span className="text-3xl font-bold text-primary">${gear.pricePerDay.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground"> / day</span>
+                </div>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                    gear.availability ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'
+                  }`}
+                >
+                  {gear.availability ? 'Available' : 'Unavailable'}
+                </span>
               </div>
-              <span
-                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                  gear.availability ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400'
-                }`}
+
+              <div className="mt-6 space-y-4">
+                <label className="block space-y-1.5">
+                  <span className="text-sm font-medium">Start date</span>
+                  <input
+                    type="date"
+                    min={today}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  />
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="text-sm font-medium">End date</span>
+                  <input
+                    type="date"
+                    min={startDate || today}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  />
+                </label>
+              </div>
+
+              {isCustomer && blockedRanges.length > 0 && (
+                <div className="mt-4 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-400">
+                  <p className="font-medium">Your existing bookings on this gear:</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {blockedRanges.map((b, i) => (
+                      <li key={`${b.start}-${i}`} className="flex items-center gap-1.5">
+                        <HugeiconsIcon icon={Calendar02Icon} className="size-3.5 shrink-0" strokeWidth={2} />
+                        {new Date(`${b.start}T00:00:00`).toLocaleDateString()} →{' '}
+                        {new Date(`${b.end}T00:00:00`).toLocaleDateString()}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {bookingConflict && (
+                <div className="mt-4 rounded-xl bg-red-50 px-3 py-2.5 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-400">
+                  <p className="font-medium">Dates overlap your booking</p>
+                  <p className="mt-0.5">{bookingConflict}</p>
+                </div>
+              )}
+
+              <div className="mt-6 space-y-2 border-t border-border/60 pt-5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Duration</span>
+                  <span className="font-medium tabular-nums">
+                    {days > 0 ? `${days} day${days > 1 ? 's' : ''}` : '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    ${gear.pricePerDay.toFixed(2)} × {days > 0 ? days : '—'}
+                  </span>
+                  <span className="font-medium tabular-nums">
+                    {days > 0 ? `$${totalPrice.toFixed(2)}` : '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between rounded-lg bg-primary/5 px-3 py-2 font-semibold">
+                  <span>Total</span>
+                  <span className="text-primary tabular-nums">${totalPrice.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <Button
+                className="mt-6 w-full py-3 text-base"
+                disabled={!gear.availability || !!bookingConflict || (!!user && !isCustomer)}
+                onClick={handleRent}
               >
-                {gear.availability ? 'Available' : 'Unavailable'}
-              </span>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">Start date</span>
-                <input
-                  type="date"
-                  min={today}
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                />
-              </label>
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium">End date</span>
-                <input
-                  type="date"
-                  min={startDate || today}
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                />
-              </label>
-            </div>
-
-            <div className="mt-6 space-y-2 border-t border-border/60 pt-5 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Duration</span>
-                <span className="font-medium">
-                  {days > 0 ? `${days} day${days > 1 ? 's' : ''}` : '—'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  ${gear.pricePerDay.toFixed(2)} × {days > 0 ? days : '—'}
-                </span>
-                <span className="font-medium">
-                  {days > 0 ? `$${totalPrice.toFixed(2)}` : '—'}
-                </span>
-              </div>
-              <div className="flex justify-between border-t border-border/60 pt-2 font-semibold">
-                <span>Total</span>
-                <span className="text-primary">${totalPrice.toFixed(2)}</span>
-              </div>
-            </div>
-
-            <Button
-              className="mt-6 w-full py-3 text-base"
-              disabled={!gear.availability}
-              onClick={handleRent}
-            >
-              {user ? 'Rent Now' : 'Rent Now — Sign in first'}
-              <HugeiconsIcon icon={ArrowRight02Icon} className="size-4" strokeWidth={2} />
-            </Button>
-            {!gear.availability && (
-              <p className="mt-3 text-center text-xs text-muted-foreground">
-                This item is currently unavailable.
+                {user ? (isCustomer ? 'Rent Now' : 'Providers can’t rent gear') : 'Rent Now — Sign in first'}
+                <HugeiconsIcon icon={ArrowRight02Icon} className="size-4" strokeWidth={2} />
+              </Button>
+              <Button
+                variant="outline"
+                className="mt-2 w-full py-3 text-base"
+                disabled={!!bookingConflict || (!!user && !isCustomer)}
+                onClick={handleAddToCart}
+              >
+                <HugeiconsIcon icon={ShoppingBag01Icon} className="size-4" strokeWidth={2} />
+                Add to Cart
+              </Button>
+              {bookingConflict && (
+                <p className="mt-3 text-center text-xs text-red-600 dark:text-red-400">
+                  Pick dates outside your existing booking.
+                </p>
+              )}
+              {!gear.availability && (
+                <p className="mt-3 text-center text-xs text-muted-foreground">
+                  This item is currently unavailable.
+                </p>
+              )}
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <HugeiconsIcon icon={Calendar02Icon} className="size-3.5" strokeWidth={2} />
+                Past dates are blocked automatically
               </p>
-            )}
-            <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <HugeiconsIcon icon={Calendar02Icon} className="size-3.5" strokeWidth={2} />
-              Past dates are blocked automatically
-            </p>
+            </div>
           </aside>
         </div>
 
@@ -340,11 +453,11 @@ export default function GearDetailPage() {
               {(gear.reviews ?? []).map((review, i) => (
                 <div
                   key={review.id ?? `review-${i}`}
-                  className="animate-fade-up flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5"
+                  className="animate-fade-up flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                      <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-fuchsia-500/20 text-sm font-bold text-primary">
                         {(review.customer?.name ?? 'C').charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -372,7 +485,7 @@ export default function GearDetailPage() {
                   {review.comment && (
                     <p className="text-sm leading-relaxed text-foreground/80">{review.comment}</p>
                   )}
-                  <span className="mt-auto flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                  <span className="mt-auto flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400">
                     <HugeiconsIcon icon={BadgeCheckIcon} className="size-3.5" strokeWidth={2} />
                     Verified rental
                   </span>

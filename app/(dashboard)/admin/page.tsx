@@ -20,7 +20,10 @@ export default function AdminDashboardOverviewPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h1 className="text-2xl font-bold sm:text-3xl">Admin Dashboard</h1>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Admin Dashboard · Overview
+      </p>
+      <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Admin Dashboard</h1>
       <p className="mt-1 text-muted-foreground">Platform overview and moderation tools.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">

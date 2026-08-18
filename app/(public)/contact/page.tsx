@@ -39,10 +39,10 @@ const INFO = [
 ];
 
 const SOCIALS = [
-  { icon: Facebook01Icon, label: 'Facebook' },
-  { icon: InstagramIcon, label: 'Instagram' },
-  { icon: TwitterIcon, label: 'Twitter' },
-  { icon: Linkedin01Icon, label: 'LinkedIn' },
+  { icon: Facebook01Icon, label: 'Facebook', href: 'https://facebook.com' },
+  { icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com' },
+  { icon: TwitterIcon, label: 'Twitter', href: 'https://twitter.com' },
+  { icon: Linkedin01Icon, label: 'LinkedIn', href: 'https://linkedin.com' },
 ];
 
 export default function ContactPage() {
@@ -93,7 +93,7 @@ export default function ContactPage() {
 
         <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
           <p className="animate-fade-up inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur-sm">
-            Contact Us
+            Contact
           </p>
           <h1 className="animate-fade-up animation-delay-100 mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">
             Let&apos;s talk gear
@@ -107,18 +107,22 @@ export default function ContactPage() {
 
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.3fr]">
         <div className="space-y-4">
-          {INFO.map((card) => (
+          {INFO.map((card, i) => (
             <div
               key={card.title}
-              className="animate-fade-up flex items-start gap-4 rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="animate-fade-up flex items-start gap-4 rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+              style={{ animationDelay: `${i * 80}ms` }}
             >
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-fuchsia-500/15 text-primary transition-all duration-300 group-hover:scale-110">
                 <HugeiconsIcon icon={card.icon} className="size-5" strokeWidth={2} />
               </div>
               <div>
                 <h3 className="font-semibold">{card.title}</h3>
-                {card.lines.map((line) => (
-                  <p key={line} className="text-sm text-muted-foreground">
+                {card.lines.map((line, j) => (
+                  <p
+                    key={line}
+                    className={j === 0 ? 'text-sm font-medium text-foreground/80' : 'text-sm text-muted-foreground'}
+                  >
                     {line}
                   </p>
                 ))}
@@ -128,13 +132,16 @@ export default function ContactPage() {
 
           <div className="animate-fade-up animation-delay-200 rounded-2xl border border-border/60 bg-card p-5">
             <h3 className="font-semibold">Follow us</h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">Stay close — deals drop often.</p>
             <div className="mt-3 flex gap-2">
               {SOCIALS.map((social) => (
                 <a
                   key={social.label}
-                  href="#"
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground"
+                  className="flex size-10 items-center justify-center rounded-full border border-border/60 bg-muted text-muted-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary-foreground active:scale-90"
                 >
                   <HugeiconsIcon icon={social.icon} className="size-4" strokeWidth={2} />
                 </a>
@@ -153,7 +160,13 @@ export default function ContactPage() {
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="name">Your name</Label>
-              <Input id="name" placeholder="John Doe" value={form.name} onChange={update('name')} />
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={form.name}
+                onChange={update('name')}
+                className="transition-shadow focus-visible:ring-primary"
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email address</Label>
@@ -163,6 +176,7 @@ export default function ContactPage() {
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={update('email')}
+                className="transition-shadow focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -174,6 +188,7 @@ export default function ContactPage() {
               placeholder="How can we help?"
               value={form.subject}
               onChange={update('subject')}
+              className="transition-shadow focus-visible:ring-primary"
             />
           </div>
 
@@ -185,18 +200,22 @@ export default function ContactPage() {
               placeholder="Tell us the details…"
               value={form.message}
               onChange={update('message')}
-              className="w-full rounded-xl border border-input bg-input/30 px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="w-full rounded-xl border border-input bg-input/30 px-3 py-2 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />
           </div>
 
           <Button
             type="submit"
             size="lg"
-            className="mt-6 w-full"
+            className="group mt-6 w-full"
             disabled={sending}
           >
             {sending ? 'Sending…' : 'Send message'}
-            <HugeiconsIcon icon={Message01Icon} className="size-4" strokeWidth={2} />
+            <HugeiconsIcon
+              icon={Message01Icon}
+              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+              strokeWidth={2}
+            />
           </Button>
         </form>
       </section>

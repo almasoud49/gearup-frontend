@@ -13,13 +13,14 @@ import ReviewModal from '@/app/(dashboard)/_components/reviews/ReviewModal';
 import { Button } from '@/components/ui/button';
 import { deleteReviewAction, getMyReviews } from '@/app/(dashboard)/_actions/rentalActions';
 import { useCustomerData } from '@/app/(dashboard)/_components/useDashboardData';
+import ErrorState from '@/app/(dashboard)/_components/ErrorState';
 import { useAuthStore } from '@/lib/auth';
 import type { RentalOrder, Review } from '@/lib/types';
 
 export default function CustomerReviewsPage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
-  const { orders, isLoading } = useCustomerData();
+  const { orders, isLoading, isError, refetch } = useCustomerData();
   const [reviewFor, setReviewFor] = useState<RentalOrder | null>(null);
   const [editFor, setEditFor] = useState<Review | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
@@ -51,7 +52,10 @@ export default function CustomerReviewsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">My Reviews</h1>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Customer Dashboard · Reviews
+        </p>
+        <h1 className="mt-1 text-2xl font-bold sm:text-3xl">My Reviews</h1>
         <p className="mt-1 text-muted-foreground">Review returned rentals and see what you&apos;ve shared.</p>
       </div>
 
@@ -82,7 +86,9 @@ export default function CustomerReviewsPage() {
       )}
 
       <div className="mt-8 space-y-3">
-        {isLoading || reviewsLoading ? (
+        {isError ? (
+          <ErrorState onRetry={refetch} />
+        ) : isLoading || reviewsLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 2 }).map((_, i) => (
               <div key={i} className="h-28 animate-pulse rounded-2xl bg-muted" />

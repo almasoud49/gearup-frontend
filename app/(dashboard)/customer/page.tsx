@@ -35,7 +35,10 @@ export default function CustomerDashboardOverviewPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h1 className="text-2xl font-bold sm:text-3xl">Welcome, {user.name.split(' ')[0]} 👋</h1>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Customer Dashboard · Overview
+      </p>
+      <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Welcome, {user.name.split(' ')[0]} 👋</h1>
       <p className="mt-1 text-muted-foreground">Here&apos;s what&apos;s happening with your rentals.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">

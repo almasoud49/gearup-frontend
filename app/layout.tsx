@@ -25,7 +25,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`flex min-h-screen flex-col bg-background text-foreground ${inter.className}`} suppressHydrationWarning>
+      <body id="top" className={`flex min-h-screen flex-col bg-background text-foreground ${inter.className}`} suppressHydrationWarning>
         <Providers>
           <div className="flex-1">{children}</div>
           <Footer />

@@ -61,7 +61,10 @@ export default function GearBrowsePage() {
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Browse gear</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Gear library
+          </p>
+          <h1 className="mt-1 text-3xl font-bold">Browse gear</h1>
           <p className="mt-1 text-muted-foreground">
             {isLoading ? 'Loading…' : `${items.length} items ready to rent`}
           </p>
@@ -71,13 +74,13 @@ export default function GearBrowsePage() {
           <aside className="h-fit rounded-2xl border border-border/60 bg-card p-5 lg:sticky lg:top-20">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-semibold">
-                <HugeiconsIcon icon={FilterIcon} className="size-4" strokeWidth={2} />
+                <HugeiconsIcon icon={FilterIcon} className="size-4 text-primary" strokeWidth={2} />
                 Filters
               </h2>
               {hasFilters && (
                 <button
                   onClick={clearFilters}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition hover:text-destructive"
                 >
                   <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" strokeWidth={2} />
                   Clear
@@ -97,7 +100,7 @@ export default function GearBrowsePage() {
                   <Input
                     id="search"
                     placeholder="Search gear…"
-                    className="pl-9"
+                    className="pl-9 transition-shadow focus-visible:ring-primary"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -109,10 +112,10 @@ export default function GearBrowsePage() {
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => setCategoryId('all')}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                       categoryId === 'all'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted hover:bg-muted/70'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                     }`}
                   >
                     All
@@ -121,10 +124,10 @@ export default function GearBrowsePage() {
                     <button
                       key={c.id}
                       onClick={() => setCategoryId(c.id)}
-                      className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
                         categoryId === c.id
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted hover:bg-muted/70'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                       }`}
                     >
                       {c.name}
@@ -139,7 +142,7 @@ export default function GearBrowsePage() {
                   id="brand"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
-                  className="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  className="h-9 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
                   <option value="all">All brands</option>
                   {BRANDS.map((b) => (
@@ -161,6 +164,7 @@ export default function GearBrowsePage() {
                   placeholder="$"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
+                  className="transition-shadow focus-visible:ring-primary"
                 />
               </div>
 
@@ -170,7 +174,7 @@ export default function GearBrowsePage() {
                   id="sort"
                   value={sort}
                   onChange={(e) => setSort(e.target.value as 'asc' | 'desc')}
-                  className="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  className="h-9 w-full rounded-xl border border-input bg-input/30 px-3 text-sm outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
                   <option value="asc">Lowest first</option>
                   <option value="desc">Highest first</option>
@@ -181,9 +185,17 @@ export default function GearBrowsePage() {
 
           <div>
             {isError ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-500/40 dark:bg-red-500/10">
-                <p className="font-medium text-red-700 dark:text-red-400">Failed to load gear.</p>
-                <Button className="mt-4" onClick={() => refetch()}>
+              <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 p-10 text-center dark:border-red-500/40 dark:bg-red-500/10">
+                <span className="flex size-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400">
+                  <HugeiconsIcon icon={Cancel01Icon} className="size-6" strokeWidth={2} />
+                </span>
+                <p className="mt-3 font-semibold text-red-700 dark:text-red-400">
+                  Failed to load gear.
+                </p>
+                <p className="mt-1 text-sm text-red-600/70 dark:text-red-400/70">
+                  The backend may be unreachable. Please try again.
+                </p>
+                <Button className="mt-5" onClick={() => refetch()}>
                   Retry
                 </Button>
               </div>
@@ -194,9 +206,15 @@ export default function GearBrowsePage() {
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <div className="rounded-2xl border border-border/60 bg-card p-10 text-center">
-                <p className="text-muted-foreground">No gear matches your filters.</p>
-                <Button variant="outline" className="mt-4" onClick={clearFilters}>
+              <div className="flex flex-col items-center rounded-2xl border border-dashed border-border/70 bg-card p-10 text-center">
+                <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                  <HugeiconsIcon icon={Search01Icon} className="size-6" strokeWidth={2} />
+                </span>
+                <p className="mt-3 font-semibold">No gear matches your filters</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Try widening your search or clearing the filters.
+                </p>
+                <Button variant="outline" className="mt-5" onClick={clearFilters}>
                   Clear filters
                 </Button>
               </div>

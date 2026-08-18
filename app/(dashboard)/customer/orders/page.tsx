@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { CreditCardIcon, StarIcon } from '@hugeicons/core-free-icons';
+import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { CreditCardIcon, StarIcon, Refresh01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
 import GearImage from '@/app/(public)/_components/gear/GearImage';
@@ -11,16 +13,26 @@ import StatusBadge from '@/app/(public)/_components/orders/StatusBadge';
 import ReviewModal from '@/app/(dashboard)/_components/reviews/ReviewModal';
 import { Button } from '@/components/ui/button';
 import { useCustomerData } from '@/app/(dashboard)/_components/useDashboardData';
+import ErrorState from '@/app/(dashboard)/_components/ErrorState';
+import { cancelRentalAction } from '@/app/(dashboard)/_actions/rentalActions';
 import type { RentalOrder } from '@/lib/types';
 
 function OrderCard({
   order,
   onPay,
   onReview,
+  onRentAgain,
+  onCancel,
+  cancelling,
+  confirmingCancel,
 }: {
   order: RentalOrder;
   onPay?: (order: RentalOrder) => void;
   onReview?: (order: RentalOrder) => void;
+  onRentAgain?: (order: RentalOrder) => void;
+  onCancel?: (order: RentalOrder) => void;
+  cancelling?: boolean;
+  confirmingCancel?: boolean;
 }) {
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -47,7 +59,7 @@ function OrderCard({
         <p className="font-mono text-xs text-muted-foreground">{order.id.slice(0, 10)}…</p>
       </div>
       <div className="flex justify-end">
-        {order.status === 'CONFIRMED' && onPay && (
+        {['PLACED', 'CONFIRMED'].includes(order.status) && onPay && (
           <Button size="sm" onClick={() => onPay(order)}>
             <HugeiconsIcon icon={CreditCardIcon} className="size-4" strokeWidth={2} />
             Pay Now
@@ -68,6 +80,32 @@ function OrderCard({
             <Link href={`/gear/${order.gearItemId}`}>View gear</Link>
           </Button>
         )}
+        {order.status === 'RETURNED' && onRentAgain && order.gearItem && (
+          <Button size="sm" variant="outline" onClick={() => onRentAgain(order)}>
+            <HugeiconsIcon icon={Refresh01Icon} className="size-4" strokeWidth={2} />
+            Rent Again
+          </Button>
+        )}
+        {order.status === 'PLACED' && onCancel && (
+          <Button
+            size="sm"
+            variant={confirmingCancel ? 'destructive' : 'outline'}
+            className={
+              confirmingCancel
+                ? undefined
+                : 'text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400'
+            }
+            disabled={cancelling}
+            onClick={() => onCancel(order)}
+          >
+            <HugeiconsIcon icon={Cancel01Icon} className="size-4" strokeWidth={2} />
+            {cancelling
+              ? 'Cancelling…'
+              : confirmingCancel
+                ? 'Confirm cancel?'
+                : 'Cancel Order'}
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -75,13 +113,41 @@ function OrderCard({
 
 export default function CustomerOrdersPage() {
   const router = useRouter();
-  const { orders, isLoading } = useCustomerData();
+  const queryClient = useQueryClient();
+  const { orders, isLoading, isError, refetch } = useCustomerData();
 
   const [showHistory, setShowHistory] = useState(false);
   const [reviewFor, setReviewFor] = useState<RentalOrder | null>(null);
+  const [confirmingCancelId, setConfirmingCancelId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const openReview = (order: RentalOrder) => {
     setReviewFor(order);
+  };
+
+  const rentAgain = (order: RentalOrder) => {
+    router.push(`/gear/${order.gearItemId}`);
+  };
+
+  const handleCancel = async (order: RentalOrder) => {
+    if (confirmingCancelId !== order.id) {
+      setConfirmingCancelId(order.id);
+      return;
+    }
+    setCancellingId(order.id);
+    const result = await cancelRentalAction(order.id);
+    if (result.ok) {
+      toast.success('Order cancelled. You can rebook anytime.');
+      setConfirmingCancelId(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['payments'] }),
+        queryClient.invalidateQueries({ queryKey: ['rentals'] }),
+        queryClient.invalidateQueries({ queryKey: ['rental-stats'] }),
+      ]);
+    } else {
+      toast.error(result.error ?? 'Could not cancel the order.');
+    }
+    setCancellingId(null);
   };
 
   const filteredOrders = orders.filter((o) =>
@@ -92,7 +158,10 @@ export default function CustomerOrdersPage() {
     <div className="mx-auto max-w-6xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">My Orders</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Customer Dashboard · Orders
+          </p>
+          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">My Orders</h1>
           <p className="mt-1 text-muted-foreground">Track, pay, and review your rentals.</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setShowHistory((v) => !v)}>
@@ -100,7 +169,11 @@ export default function CustomerOrdersPage() {
         </Button>
       </div>
 
-      {isLoading && orders.length === 0 ? (
+      {isError ? (
+        <div className="mt-6">
+          <ErrorState onRetry={refetch} />
+        </div>
+      ) : isLoading && orders.length === 0 ? (
         <div className="mt-6 space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
@@ -116,6 +189,9 @@ export default function CustomerOrdersPage() {
       ) : filteredOrders.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-border/60 bg-card p-10 text-center">
           <p className="text-muted-foreground">No active rentals.</p>
+          <Button asChild variant="outline" className="mt-4">
+            <Link href="/gear">Browse gear</Link>
+          </Button>
         </div>
       ) : (
         <div className="mt-6 space-y-3">
@@ -125,6 +201,10 @@ export default function CustomerOrdersPage() {
               order={order}
               onPay={(o) => router.push(`/payment/${o.id}`)}
               onReview={openReview}
+              onRentAgain={rentAgain}
+              onCancel={handleCancel}
+              cancelling={cancellingId === order.id}
+              confirmingCancel={confirmingCancelId === order.id}
             />
           ))}
         </div>

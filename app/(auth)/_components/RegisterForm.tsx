@@ -65,10 +65,14 @@ export default function RegisterForm() {
             name="name"
             type="text"
             placeholder="John Doe"
-            className={`h-11 pl-10 ${!state.success && state.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+            aria-invalid={!state.success && !!state.name}
+            aria-describedby={!state.success && state.name ? 'name-error' : undefined}
+            className={`h-11 pl-10 transition-shadow focus-visible:ring-primary ${!state.success && state.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
           />
         </div>
-        {!state.success && state.name && <p className="text-sm text-red-500 dark:text-red-400">{state.name}</p>}
+        {!state.success && state.name && (
+          <p id="name-error" className="text-sm text-red-500 dark:text-red-400">{state.name}</p>
+        )}
       </div>
 
       {/* Email */}
@@ -81,10 +85,14 @@ export default function RegisterForm() {
             name="email"
             type="email"
             placeholder="you@example.com"
-            className={`h-11 pl-10 ${!state.success && state.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+            aria-invalid={!state.success && !!state.email}
+            aria-describedby={!state.success && state.email ? 'email-error' : undefined}
+            className={`h-11 pl-10 transition-shadow focus-visible:ring-primary ${!state.success && state.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
           />
         </div>
-        {!state.success && state.email && <p className="text-sm text-red-500 dark:text-red-400">{state.email}</p>}
+        {!state.success && state.email && (
+          <p id="email-error" className="text-sm text-red-500 dark:text-red-400">{state.email}</p>
+        )}
       </div>
 
       {/* Password */}
@@ -94,9 +102,13 @@ export default function RegisterForm() {
           id="password"
           name="password"
           placeholder="At least 6 characters"
+          aria-invalid={!state.success && !!state.password}
+          aria-describedby={!state.success && state.password ? 'password-error' : undefined}
           className={!state.success && state.password ? 'border-red-500 focus-visible:ring-red-500' : ''}
         />
-        {!state.success && state.password && <p className="text-sm text-red-500 dark:text-red-400">{state.password}</p>}
+        {!state.success && state.password && (
+          <p id="password-error" className="text-sm text-red-500 dark:text-red-400">{state.password}</p>
+        )}
       </div>
 
       {/* Role */}
@@ -108,7 +120,7 @@ export default function RegisterForm() {
           <Select value={role} onValueChange={(v) => setRole(v as 'CUSTOMER' | 'PROVIDER')}>
             <SelectTrigger
               id="role"
-              className={`h-11 w-full pl-10 ${!state.success && state.role ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+              className={`h-11 w-full pl-10 transition-shadow focus-visible:ring-primary ${!state.success && state.role ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
             >
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
@@ -130,14 +142,18 @@ export default function RegisterForm() {
       <Button
         type="submit"
         disabled={isPending}
-        className="h-11 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-semibold text-white transition-all duration-200 hover:from-indigo-700 hover:to-purple-700"
+        className="group h-11 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-indigo-600/35"
       >
         {isPending ? (
           'Creating account...'
         ) : (
           <>
             Create Account
-            <HugeiconsIcon icon={ArrowRight02Icon} className="size-4" strokeWidth={2} />
+            <HugeiconsIcon
+              icon={ArrowRight02Icon}
+              className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+              strokeWidth={2}
+            />
           </>
         )}
       </Button>

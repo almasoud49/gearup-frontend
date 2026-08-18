@@ -81,8 +81,11 @@ export default function GearForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
-    await mutation.mutateAsync();
-    setSaving(false);
+    try {
+      await mutation.mutateAsync();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const set = <K extends keyof GearPayload>(key: K, value: GearPayload[K]) =>

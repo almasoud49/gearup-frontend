@@ -38,6 +38,14 @@ export const getRentalById = async (id: string): Promise<ApiResponse<RentalOrder
   return res.json();
 };
 
+export const getMyRentals = async (): Promise<ApiResponse<RentalOrder[]>> => {
+  const res = await fetch(`${API_BASE_URL}/rentals/my-rentals`, {
+    headers: await authHeaders(),
+    cache: 'no-store',
+  });
+  return res.json();
+};
+
 export const getRentalStatsOverview = async (): Promise<ApiResponse<RentalStatsOverview>> => {
   const res = await fetch(`${API_BASE_URL}/rentals/stats/overview`, {
     headers: await authHeaders(),
@@ -90,4 +98,21 @@ export const createPaymentIntent = async (
     body: JSON.stringify({ rentalOrderId }),
   });
   return res.json();
+};
+
+export const confirmPaymentAction = async (
+  paymentIntentId: string
+): Promise<{ ok: boolean; error?: string; message?: string }> => {
+  const res = await fetch(`${API_BASE_URL}/payments/confirm`, {
+    method: 'POST',
+    headers: { ...jsonHeaders, ...(await authHeaders()) },
+    body: JSON.stringify({ paymentIntentId }),
+  });
+
+  if (!res.ok) {
+    return { ok: false, error: await getServerError(res, 'Could not confirm payment.') };
+  }
+
+  const result = (await res.json()) as ApiResponse<{ message: string }>;
+  return { ok: true, message: result.data?.message };
 };

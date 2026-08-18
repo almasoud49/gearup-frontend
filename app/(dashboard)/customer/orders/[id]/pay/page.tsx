@@ -43,7 +43,7 @@ export default function PayOrderPage() {
     );
   }
 
-  const canPay = order.status === 'CONFIRMED';
+  const canPay = ['PLACED', 'CONFIRMED'].includes(order.status);
 
   return (
     <div className="mx-auto max-w-2xl">

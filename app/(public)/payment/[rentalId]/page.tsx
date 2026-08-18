@@ -95,7 +95,40 @@ export default function PaymentPage() {
             </div>
           )}
 
-          {!isLoading && order && order.status !== 'PAID' && (
+          {!isLoading && order && order.status === 'CANCELLED' && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                This order was cancelled and cannot be paid.
+              </p>
+              <Button asChild className="mt-4 w-full" variant="outline">
+                <Link href="/customer">Back to dashboard</Link>
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && order && order.status === 'RETURNED' && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                This rental has already been returned.
+              </p>
+              <Button asChild className="mt-4 w-full" variant="outline">
+                <Link href="/customer">Back to dashboard</Link>
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && order && order.status === 'PICKED_UP' && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                This order is already picked up — payment was completed.
+              </p>
+              <Button asChild className="mt-4 w-full" variant="outline">
+                <Link href="/customer">Back to dashboard</Link>
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && order && ['PLACED', 'CONFIRMED'].includes(order.status) && (
             <>
               <div className="mt-6 flex items-center justify-between rounded-xl bg-muted/60 px-4 py-3 text-sm">
                 <span className="font-medium">{order.gearItem?.name ?? 'Rental order'}</span>

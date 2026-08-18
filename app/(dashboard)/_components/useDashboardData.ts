@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { orderStore } from '@/lib/orderStore';
 import { useAuthStore } from '@/lib/auth';
@@ -19,7 +19,8 @@ function getUsersArray(data: { data: unknown }): User[] {
 }
 
 export function useCustomerData() {
-  const { data: paymentsData, isLoading: paymentsLoading } = useQuery({
+  const queryClient = useQueryClient();
+  const { data: paymentsData, isLoading: paymentsLoading, isError: paymentsError } = useQuery({
     queryKey: ['payments'],
     queryFn: getMyPayments,
   });
@@ -40,7 +41,8 @@ export function useCustomerData() {
         .filter(
           (r): r is PromiseFulfilledResult<ApiResponse<RentalOrder>> => r.status === 'fulfilled'
         )
-        .map((r) => r.value.data);
+        .map((r) => r.value.data)
+        .filter((o): o is RentalOrder => !!o && typeof o === 'object' && !!o.id);
     },
   });
 
@@ -76,23 +78,26 @@ export function useCustomerData() {
     stats,
     isLoading: paymentsLoading || localLoading,
     statsLoading,
+    isError: paymentsError,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['payments'] }),
   };
 }
 
 export function useProviderData() {
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
 
-  const { data: gearData, isLoading: gearLoading } = useQuery({
+  const { data: gearData, isLoading: gearLoading, isError: gearError } = useQuery({
     queryKey: ['gear'],
     queryFn: () => getAllGear({ limit: 100 }),
   });
 
-  const { data: ordersData, isLoading: ordersLoading } = useQuery({
+  const { data: ordersData, isLoading: ordersLoading, isError: ordersError } = useQuery({
     queryKey: ['rentals'],
     queryFn: () => getRentals({ limit: 100 }),
   });
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: ['provider-stats'],
     queryFn: getProviderStats,
   });
@@ -104,10 +109,9 @@ export function useProviderData() {
 
   const myOrders = useMemo(() => {
     const all = ordersData?.data ?? [];
-    if (!user) return all;
+    if (!user) return [];
     const ownGearIds = new Set(myGear.map((g) => g.id));
-    const own = all.filter((o) => ownGearIds.has(o.gearItemId));
-    return own.length > 0 ? own : all;
+    return all.filter((o) => ownGearIds.has(o.gearItemId));
   }, [ordersData, myGear, user]);
 
   const pending = myOrders.filter((o) => ['PLACED', 'CONFIRMED'].includes(o.status)).length;
@@ -122,31 +126,63 @@ export function useProviderData() {
     gearLoading,
     ordersLoading,
     statsLoading,
+    isError: gearError || ordersError || statsError,
+    refetch: () => {
+      queryClient.invalidateQueries({ queryKey: ['gear'] });
+      queryClient.invalidateQueries({ queryKey: ['rentals'] });
+      queryClient.invalidateQueries({ queryKey: ['provider-stats'] });
+    },
   };
 }
 
 export function useAdminData() {
-  const { data: usersData, isLoading: usersLoading } = useQuery({
+  const queryClient = useQueryClient();
+  const { data: usersData, isLoading: usersLoading, isError: usersError } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: getAdminUsers,
+    queryFn: async () => {
+      const [customers, providers] = await Promise.all([
+        getAdminUsers({ role: 'CUSTOMER' }),
+        getAdminUsers({ role: 'PROVIDER' }),
+      ]);
+      return [
+        ...getUsersArray({ data: customers }),
+        ...getUsersArray({ data: providers }),
+      ];
+    },
   });
-  const { data: gearData, isLoading: gearLoading } = useQuery({
+  const { data: gearData, isLoading: gearLoading, isError: gearError } = useQuery({
     queryKey: ['gear'],
     queryFn: () => getAllGear({ limit: 100 }),
   });
-  const { data: ordersData, isLoading: ordersLoading } = useQuery({
+  const { data: ordersData, isLoading: ordersLoading, isError: ordersError } = useQuery({
     queryKey: ['rentals'],
     queryFn: () => getRentals({ limit: 100 }),
   });
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: getAdminStats,
   });
 
-  const users = useMemo(() => getUsersArray({ data: usersData }) as User[], [usersData]);
+  const users = useMemo(() => usersData ?? [], [usersData]);
   const gear = gearData?.data ?? [];
   const orders = ordersData?.data ?? [];
   const stats: AdminStats | undefined = statsData?.data;
 
-  return { users, gear, orders, stats, usersLoading, gearLoading, ordersLoading, statsLoading };
+  return {
+    users,
+    gear,
+    orders,
+    stats,
+    usersLoading,
+    gearLoading,
+    ordersLoading,
+    statsLoading,
+    isError: usersError || gearError || ordersError || statsError,
+    refetch: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['gear'] });
+      queryClient.invalidateQueries({ queryKey: ['rentals'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+    },
+  };
 }

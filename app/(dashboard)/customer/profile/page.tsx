@@ -50,7 +50,10 @@ export default function CustomerProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold sm:text-3xl">Profile</h1>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Customer Dashboard · Profile
+      </p>
+      <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Profile</h1>
       <p className="mt-1 text-muted-foreground">Your account details and role on GearUp.</p>
 
       <div className="mt-6 rounded-2xl border border-border/60 bg-card p-6">

@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Moon01Icon, Sun02Icon } from '@hugeicons/core-free-icons';
+import { SunriseIcon, SunsetIcon } from '@hugeicons/core-free-icons';
+import { cn } from '@/lib/utils';
 
 const THEME_KEY = 'gearup-theme';
 
@@ -34,6 +35,7 @@ function getServerSnapshot(): Theme {
 
 export default function ThemeToggle({ className }: { className?: string }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const dark = theme === 'dark';
 
   return (
     <button
@@ -44,14 +46,23 @@ export default function ThemeToggle({ className }: { className?: string }) {
         document.documentElement.classList.toggle('dark', next === 'dark');
         listeners.forEach((l) => l());
       }}
-      className={`flex size-9 cursor-pointer items-center justify-center rounded-full text-foreground transition hover:bg-muted ${className ?? ''}`}
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      className={cn(
+        'relative flex size-9 cursor-pointer items-center justify-center rounded-full border border-border/60 bg-card text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-primary/10 active:scale-90',
+        className
+      )}
+      aria-label={`Switch to ${dark ? 'light' : 'dark'} mode`}
+      aria-pressed={dark}
     >
-      <HugeiconsIcon
-        icon={theme === 'dark' ? Sun02Icon : Moon01Icon}
-        className="size-5"
-        strokeWidth={2}
-      />
+      <span
+        key={theme}
+        className="animate-zoom-in flex items-center justify-center text-primary"
+      >
+        <HugeiconsIcon
+          icon={dark ? SunriseIcon : SunsetIcon}
+          className="size-5"
+          strokeWidth={2}
+        />
+      </span>
     </button>
   );
 }

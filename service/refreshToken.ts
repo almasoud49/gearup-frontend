@@ -65,6 +65,8 @@ export const getAccessToken = async () => {
       });
 
       accessToken = newAccessToken;
+    } else {
+      return null;
     }
   }
 

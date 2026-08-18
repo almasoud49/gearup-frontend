@@ -11,6 +11,7 @@ import {
   UserIcon,
   Menu01Icon,
   Cancel01Icon,
+  ShoppingBag01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
@@ -25,14 +26,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { ROLE_HOME, useAuthStore } from '@/lib/auth';
+import { useCartStore } from '@/lib/cartStore';
 import { logout as serverLogout } from '@/service/logout';
 import ThemeToggle from '@/app/(public)/_components/ThemeToggle';
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Gears', href: '/gear' },
-  { label: 'About Us', href: '/about' },
-  { label: 'Contact Us', href: '/contact' },
+  { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 const ROLE_LABEL: Record<string, string> = {
@@ -46,6 +48,7 @@ export default function Header() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const storeLogout = useAuthStore((state) => state.logout);
+  const cartCount = useCartStore((state) => state.items.length);
 
   const [open, setOpen] = useState(false);
 
@@ -65,21 +68,21 @@ export default function Header() {
     <nav className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-bold">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+        <Link href="/" className="group flex shrink-0 items-center gap-2 text-lg font-bold">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:shadow-md group-hover:shadow-primary/25">
             <HugeiconsIcon icon={Dumbbell01Icon} className="size-5" strokeWidth={2} />
           </span>
-          GearUp
+          <span className="transition-colors group-hover:text-primary">GearUp</span>
         </Link>
 
         {/* Centered nav links */}
-        <div className="hidden items-center gap-1 rounded-full bg-muted/60 p-1 md:absolute md:left-1/2 md:flex md:-translate-x-1/2">
+        <div className="hidden items-center gap-1 rounded-full border border-border/40 bg-card/70 p-1 shadow-sm backdrop-blur-sm md:absolute md:left-1/2 md:flex md:-translate-x-1/2">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+                'rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200',
                 isActive(item.href)
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-foreground hover:bg-muted hover:text-primary'
@@ -92,6 +95,18 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/cart"
+            className="relative flex size-9 items-center justify-center rounded-full text-foreground transition hover:bg-muted"
+            aria-label={`Cart (${cartCount} items)`}
+          >
+            <HugeiconsIcon icon={ShoppingBag01Icon} className="size-5" strokeWidth={2} />
+            {cartCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-4.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {cartCount}
+              </span>
+            )}
+          </Link>
           <ThemeToggle className="md:mr-1" />
           <button
             type="button"
@@ -111,7 +126,7 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-primary/10 transition hover:bg-primary/20"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-primary/10 transition-all duration-300 hover:bg-primary/20 active:scale-95"
                   aria-label="Account menu"
                 >
                   <HugeiconsIcon icon={UserIcon} className="size-4 text-primary" strokeWidth={2} />
@@ -146,7 +161,7 @@ export default function Header() {
           ) : (
             <div className="hidden items-center gap-2 sm:flex">
               <Button asChild variant="ghost" size="sm">
-                <Link href="/register">Register</Link>
+                <Link href="/register">Sign Up</Link>
               </Button>
               <Button asChild size="sm">
                 <Link href="/login">Login</Link>
@@ -158,7 +173,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="animate-fade-in border-t border-border/60 bg-card px-4 pb-5 pt-3 md:hidden">
+        <div className="animate-fade-in border-t border-border/60 bg-background/95 px-4 pb-5 pt-3 backdrop-blur-md md:hidden">
           <div className="flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
               <Link
@@ -169,7 +184,7 @@ export default function Header() {
                   'rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive(item.href)
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-muted'
+                    : 'text-foreground hover:bg-muted hover:text-primary'
                 )}
               >
                 {item.label}
@@ -182,7 +197,7 @@ export default function Header() {
                 <Link href="/login">Login</Link>
               </Button>
               <Button asChild className="flex-1" onClick={() => setOpen(false)}>
-                <Link href="/register">Register</Link>
+                <Link href="/register">Sign Up</Link>
               </Button>
             </div>
           )}
